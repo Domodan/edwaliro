@@ -229,9 +229,9 @@
         return date.getHours()-3 + ":" + date.getMinutes() + ":" + date.getSeconds()
     }
 
-    async function send_sms(message, numbers) {
+    async function send_sms(message, number) {
         
-        const url = 'core/send_sms/';
+        const url = 'http://127.0.0.1:8000/core/send_sms/';
         const method = "POST";
         const contentType = "application/json";
         const accept = "application/json";
@@ -240,20 +240,22 @@
         console.log("Index CSRFToken:", csrftoken);
 
         const body = {
-            message: message,
-            number: numbers
+            messages: message,
+            numbers: number
         }
+        console.log("Data Body:", body);
         let response = await fetch(url, {
             method: method,
+            body: JSON.stringify({'messages': message, 'numbers': number}),
             headers: {
-                'Accept': accept,
                 'Content-Type': contentType,
-                'CSRFToken': csrftoken
-            },
-            body: JSON.stringify(body)
+                'X-CSRFToken': csrftoken
+            }
         });
 
         let response_data = await response.json();
+
+        console.log("Response:", response_data);
 
     }
 
@@ -284,15 +286,15 @@
 
             let datum1;
 
-            if(data.feeds[i].field6) {
+            if(data.feeds[i].field4) {
                 datum1 = parseFloat(data.feeds[i].field4);
             }
             else {
                 datum1 = 0;
             }
 
-            if (datum1 < 30 || datum1 > 37) {
-                const message = "Abnormal Body Temperature of " + datum1 + " detected";
+            if ((datum2 !== 0) && (datum2 < 30 || datum2 > 37)) {
+                const message = "Abnormal Body Temperature of " + datum2 + " detected";
                 const number = "256776499859";
 
                 console.log("SMS Message:", message, " Phone:", number);

@@ -1,9 +1,8 @@
-from email import message
 import json
 import requests
 from django.urls import reverse
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 
 from core.forms import *
 
@@ -21,7 +20,6 @@ def index(request):
     url = 'https://api.thingspeak.com/channels/1596329/feeds.json?api_key=PY5EDT094TON962X&results=5'
     response = requests.get(url).json()
     data = response['feeds'][3]
-    print("Thingspeak Data:", data)
 
     return render(request, 'core/index.html',
         {
@@ -425,6 +423,9 @@ def fetch_data(request):
 
 # Send SMS
 def send_sms(request):
+    
+    data = json.loads(request.body)
+
     base_url = 'https://sms.dmarkmobile.com/v2/'
     api_endpoint = 'api/send_sms/'
     url = base_url + api_endpoint
@@ -433,8 +434,8 @@ def send_sms(request):
     sppass_password = 'dicts'
 
     sender = 8008
-    number = request.data['number']
-    message = request.data['message']
+    number = data['numbers']
+    message = data['messages']
     type = 'json'
 
     params = {
@@ -455,17 +456,22 @@ def send_sms(request):
         'Content-Type': 'application/json'
     }
     
-    sameple_call = 'https://sms.dmarkmobile.com/v2/api/send_sms/?spname=makuni&sppass=dicts&sender=8008&numbers=256xxxxxxxxx&msg=testing&type=json'
+    sample_call = 'https://sms.dmarkmobile.com/v2/api/send_sms/?spname=makuni&sppass=dicts&sender=8008&numbers=256776499859&msg=' + message + '&type=json'
 
-    response = requests.post(url=url, data=data, headers=header, params=params)
+    response = requests.post(url=sample_call)
 
     if response.status_code == 200:
         json_data = response.json()
         print("Returned JSON Data:", json_data)
-        status = json_data['status']
-        message = json_data['message']
+        status = json_data['Error']
         print("Status: %s", status)
-        print("Message: %s", message)
+        if(status):
+            return JsonResponse({"error": status})
+        return JsonResponse({"success":"SMS sent successfully"})
+    else:
+        print("Couldn't send SMS")
+        print("Response:", response)
+        return JsonResponse({"error": response})
 
 
 # Testing
