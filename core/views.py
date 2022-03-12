@@ -456,7 +456,7 @@ def send_sms(request):
         'Content-Type': 'application/json'
     }
     
-    sample_call = 'https://sms.dmarkmobile.com/v2/api/send_sms/?spname=makuni&sppass=dicts&sender=8008&numbers=256776499859&msg=' + message + '&type=json'
+    sample_call = 'https://sms.dmarkmobile.com/v2/api/send_sms/?spname=makuni&sppass=dicts&sender=8008&numbers=' + number + '&msg=' + message + '&type=json'
 
     response = requests.post(url=sample_call)
 
