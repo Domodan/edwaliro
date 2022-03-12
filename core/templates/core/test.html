@@ -1,0 +1,378 @@
+
+{% extends "./base.html" %}
+{% load static %}
+
+{% block content %}
+
+
+<div class="row">
+
+    <!-- Area Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div
+                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h5 class="m-0 font-weight-bold text-primary">Test Chart</h5>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                        aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Dropdown Header:</div>
+                        <a class="dropdown-item" href="#">Previous Day</a>
+                        <a class="dropdown-item" href="#">Today</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Weekly</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card Body -->
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div
+                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                        aria-labelledby="dropdownMenuLink">
+                        <div class="dropdown-header">Dropdown Header:</div>
+                        <a class="dropdown-item" href="#">Action</a>
+                        <a class="dropdown-item" href="#">Another action</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                </div>
+            </div>
+            <!-- Card Body -->
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+
+    <!-- Area Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div
+                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h4 class="m-0 font-weight-bold text-primary">Body Temperature</h4>
+                
+            </div>
+            <!-- Card Body -->
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <!-- Card Header - Dropdown -->
+            <div
+                class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">Revenue Sources</h6>
+                
+            </div>
+            <!-- Card Body -->
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2">
+                    <canvas id="pieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block custom_scripts %}
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js" integrity="sha512-QSkVNOCYLtj73J4hbmVoOV6KVZuMluZlioC+trLpewV8qMjsWqlIQvkn1KGX2StWvPMdWGBqim1xlC8krl1EKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+<!-- Page level custom scripts -->
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const lineChart = document.getElementById('myChart');
+    const pieChart = document.getElementById('pieChart');
+    const barChart = document.getElementById('barChart');
+
+    let temp_data = [];
+    let time_data = [];
+    let body_temp = [];
+
+    function format_time(time) {
+        const date = new Date(time)
+        // console.log("Hours:", date.getHours()-3, " Minutes:", date.getMinutes(), " Seconds:", date.getSeconds());
+        // console.log("Date:", date.getDate(), " Day:", date.getDay(), " Year:", date.getFullYear());
+        return date.getHours()-3 + ":" + date.getMinutes() + ":" + date.getSeconds()
+    }
+
+    async function fetch_data() {
+
+        // read our JSON
+        const url = 'https://api.thingspeak.com/channels/1596329/feeds.json?api_key=PY5EDT094TON962X&results=10';
+        let response = await fetch(url);
+        let data = await response.json();
+
+        for (let i = 0; i < data.feeds.length; i++) {
+            let datum;
+            if(data.feeds[i].field1) {
+                datum = parseFloat(data.feeds[i].field1);
+            }
+            else {
+                datum = 0;
+            }
+
+            let datum2;
+
+            if(data.feeds[i].field6) {
+                datum2 = parseFloat(data.feeds[i].field6);
+            }
+            else {
+                datum2 = 0;
+            }
+
+            temp_data.push(datum);
+            body_temp.push(datum2);
+            time_data.push(format_time(data.feeds[i].created_at));
+        }
+            
+        const myChart = new Chart(lineChart, {
+            type: 'line',
+            data: {
+                labels: time_data,
+                datasets: [{
+                    label: 'Temperature',
+                    data: temp_data,
+                    lineTension: 0.3,
+                    backgroundColor: "rgba(78, 115, 223, 0.05)",
+                    borderColor: "rgba(78, 115, 223, 1)",
+                    pointRadius: 3,
+                    pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                    pointBorderColor: "rgba(78, 115, 223, 1)",
+                    pointHoverRadius: 3,
+                    pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                    pointHitRadius: 10,
+                    pointBorderWidth: 2,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'time'
+                        },
+                        gridLines: {
+                            display: true,
+                            drawBorder: true
+                        },
+                        ticks: {
+                            maxTicksLimit: 20
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 20,
+                            max: 30,
+                            maxTicksLimit: 10,
+                            padding: 5,
+                            // Include a dollar sign in the ticks
+                            // callback: function(value, index, values) {
+                            //     return '$' + number_format(value);
+                            // }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    intersect: false,
+                    mode: 'index',
+                    caretPadding: 10,
+                    // callbacks: {
+                    //     label: function(tooltipItem, chart) {
+                    //         var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                    //         return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+                    //     }
+                    // }
+                }
+            }
+        });
+
+        const myPieChart = new Chart(pieChart, {
+            type: 'doughnut',
+            data: {
+                labels: time_data,
+                datasets: [{
+                    label: "Oxygen Level",
+                    data: temp_data,
+                    backgroundColor: [
+                        'rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)','#4e73df',
+                        '#1cc88a', '#36b9cc', '#4e52df', '#1cd88a', '#36b9dc','#4e73df'
+                    ],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf'],
+                    hoverBorderColor: "rgba(234, 236, 244, 1)",
+                }],
+            },
+            hoverOffset: 4,
+            options: {
+                maintainAspectRatio: false,
+                tooltips: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                },
+                legend: {
+                    display: false
+                },
+            },
+        });
+
+        const myBarChart = new Chart(barChart, {
+            type: 'bar',
+            data: {
+                labels: time_data,
+                datasets: [{
+                    label: "Body Temperature",
+                    backgroundColor: "#4e73df",
+                    hoverBackgroundColor: "#2e59d9",
+                    borderColor: "#4e73df",
+                    data: body_temp,
+                }],
+            },
+            options: {
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        left: 10,
+                        right: 25,
+                        top: 25,
+                        bottom: 0
+                    }
+                },
+                scales: {
+                    xAxes: [{
+                        time: {
+                            unit: 'minute'
+                        },
+                        gridLines: {
+                            display: true,
+                            drawBorder: true
+                        },
+                        ticks: {
+                            maxTicksLimit: 10
+                        },
+                        maxBarThickness: 25,
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            min: 30,
+                            max: 37,
+                            maxTicksLimit: 10,
+                            padding: 10,
+                            // Include a dollar sign in the ticks
+                            // callback: function(value, index, values) {
+                            //     return '$' + number_format(value);
+                            // }
+                        },
+                        gridLines: {
+                            color: "rgb(234, 236, 244)",
+                            zeroLineColor: "rgb(234, 236, 244)",
+                            drawBorder: false,
+                            borderDash: [2],
+                            zeroLineBorderDash: [2]
+                        }
+                    }],
+                },
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    titleMarginBottom: 10,
+                    titleFontColor: '#6e707e',
+                    titleFontSize: 14,
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    // callbacks: {
+                    //     label: function(tooltipItem, chart) {
+                    //         var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                    //         return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+                    //     }
+                    // }
+                },
+            }
+        });
+
+
+    }
+
+    fetch_data();
+
+</script>
+{% endblock %}
