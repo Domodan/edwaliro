@@ -5,7 +5,7 @@
 
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">User Profile</h1>
+    <h1 class="h3 mb-0 text-gray-800">Patient Profile</h1>
     <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
       <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
     </a>
@@ -22,9 +22,13 @@
             alt="User profile picture">
         </div>
 
-        <h3 class="text-center">Daniel Ongom</h3>
+        <h3 class="text-center">
+          {% if profile %}
+            {{ profile.first_name }} {{ profile.last_name }}
+          {% endif %}
+        </h3>
 
-        <p class="text-muted text-center">Software Engineer</p>
+        <p class="text-muted text-center">Patient</p>
 
         <ul class="list-group mb-3">
           <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -64,7 +68,7 @@
 
         <div class="text-center mb-4">
           <h4 class="text-gray-900">
-            <span class="border-bottom-primary rounded font-weight-bold">User Details</span>
+            <span class="border-bottom-primary rounded font-weight-bold">Patient Details</span>
           </h4>
         </div>
 

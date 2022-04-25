@@ -5,7 +5,9 @@
 
 <!-- Page Heading -->
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-900 font-weight-bold">User Profile</h1>
+    <h1 class="h3 mb-0 text-gray-900 font-weight-bold">
+      {% if is_admin %}Administrator's{% elif is_doctor %}Doctor's{% else %}User{% endif %}
+      Profile</h1>
     <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
       <i class="fas fa-download fa-sm text-white-50"></i> Generate Report
     </a>
@@ -18,13 +20,27 @@
       <div class="card-body">
         <div class="text-center">
           <img class="img-fluid img-circle mb-2" width="40%" height="40%"
-            src="{% static 'core/img/undraw_profile_1.svg' %}"
+            src="
+            {% if is_admin %}
+                {% static 'core/img/undraw_profile.svg' %}
+            {% elif is_doctor %}
+                {{ profile.avatar.url }}
+            {% endif %}
+            "
             alt="User profile picture">
         </div>
 
-        <h3 class="text-center">Daniel Ongom</h3>
+        <h4 class="text-center">{{ profile.first_name }} {{ profile.last_name }}</h4>
 
-        <p class="text-muted text-center">Software Engineer</p>
+        <p class="text-muted text-center">Role:
+          {% if is_admin %}
+            Administrator
+          {% elif is_doctor %}
+            Doctor
+          {% else %}
+            User
+          {% endif %}
+        </p>
 
         <ul class="list-group mb-3">
           <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -72,25 +88,25 @@
           <table class="table table-hover">
             <thead class="thead-dark">
               <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
+                <th scope="col">ID</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Email</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
+                <th scope="row">{{ profile.id  }}</th>
+                <td>{{ profile.first_name }}</td>
+                <td>{{ profile.last_name }}</td>
+                <td>{{ profile.email }}</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <hr/>
-        
+<!--         
         <div class="text-center mb-4">
           <h4 class="text-gray-900">
             <span class="border-bottom-primary rounded font-weight-bold">Previous History</span>
@@ -116,7 +132,7 @@
               </tr>
             </tbody>
           </table>
-        </div>
+        </div> -->
 
       </div>
     </div>

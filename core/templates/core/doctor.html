@@ -36,8 +36,10 @@
                         <th>Phone Number</th>
                         <th>NIN</th>
                         <th>Gender</th>
+                        {% if admin %}
                         <th>Update</th>
                         <th>Delete</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tfoot>
@@ -48,8 +50,10 @@
                         <th>Phone Number</th>
                         <th>NIN</th>
                         <th>Gender</th>
+                        {% if admin %}
                         <th>Update</th>
                         <th>Delete</th>
+                        {% endif %}
                     </tr>
                 </tfoot>
                 <tbody>
@@ -63,6 +67,7 @@
                         <td>{{ d.phone_number }}</td>
                         <td>{{ d.nin }}</td>
                         <td>{{ d.gender }}</td>
+                        {% if admin %}
                         <td>
                             <a href="{% url 'doctor_edit' d.id %}" class="btn btn-primary btn-circle btn-sm">
                                 <i class="fas fa-pen"></i>
@@ -74,6 +79,7 @@
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>

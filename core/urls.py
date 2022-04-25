@@ -26,9 +26,10 @@ urlpatterns = [
     path('patient_add/', patient_add, name='patient_add'),
     path('patient_edit/<int:patient_id>/', patient_edit, name='patient_edit'),
     path('patient_delete/<int:patient_id>/', patient_delete, name='patient_delete'),
-    path('patient_profile/<int:patient_id>/', patient_profile, name='patient_profile'),
 
     path('login/', user_login, name='login'),
+    path('logout/', user_logout, name='logout'),
+    
     path('send_sms/', send_sms, name='send_sms'),
     path('test_work/', test_work, name='test_work'),
     path('forgot_password/', forgot_password, name='forgot_password'),

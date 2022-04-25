@@ -21,6 +21,10 @@
             {% elif page == 'nurse' %}Nurse
             {% elif page == 'caretaker' %}Caretaker
             {% elif page == 'patient' %}Patient
+            {% elif page == 'doctor_profile' %}Doctor Profile
+            {% elif page == 'patient_profile' %}Patient Profile 
+            {% elif page == 'nurse_profile' %}Nurse Profile
+            {% elif page == 'caretaker_profile' %}Caretaker Profile
             {% endif %}
         </title>
 
@@ -88,7 +92,7 @@
                         <i class="fas fa-fw fa-tachometer-alt"></i>
                         <span>Dashboard</span></a>
                 </li>
-
+                {% if admin %}
                 <!-- Divider -->
                 <hr class="sidebar-divider">
 
@@ -109,10 +113,10 @@
                             <h6 class="collapse-header">Doctors List:</h6>
                             <a class="collapse-item" href="{% url 'doctor' %}">Doctor</a>
                             <a class="collapse-item" href="{% url 'doctor_add' %}">Add Doctor</a>
-                            <a class="collapse-item" href="{% url 'doctor_profile' 1 %}">Profile</a>
                         </div>
                     </div>
                 </li>
+                {% endif %}
 
                 <!-- Divider -->
                 <hr class="sidebar-divider">
@@ -133,10 +137,14 @@
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Patients List:</h6>
                             <a class="collapse-item" href="{% url 'patient' %}">Patient</a>
+                            {% if admin %}
                             <a class="collapse-item" href="{% url 'patient_add' %}">Add Patient</a>
+                            {% endif %}
                         </div>
                     </div>
                 </li>
+
+                {% if admin %}
 
                 <!-- Divider -->
                 <hr class="sidebar-divider">
@@ -185,6 +193,7 @@
                         </div>
                     </div>
                 </li>
+                {% endif %}
 
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
@@ -250,8 +259,7 @@
                                     </form>
                                 </div>
                             </li>
-                            
-
+                            {% if admin %}
                             <!-- Nav Item - Doctors -->
                             <li class="nav-item dropdown no-arrow mx-1">
                                 <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
@@ -399,19 +407,55 @@
                             </li>
 
                             <div class="topbar-divider d-none d-sm-block"></div>
-
+                            {% endif %}
                             <!-- Nav Item - User Information -->
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Stephen Mpirirwe</span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                        {% if admin %}
+                                            {{ admin.first_name }} {{ admin.last_name }}
+                                        {% elif patient %}
+                                            {{ patient.first_name }} {{ patient.last_name }}
+                                        {% elif nurse %}
+                                            {{ nurse.first_name }} {{ nurse.last_name }}
+                                        {% elif doctor %}
+                                            {{ doctor.first_name }} {{ doctor.last_name }}
+                                        {% elif caretaker %}
+                                            {{ caretaker.first_name }} {{ caretaker.last_name }}
+                                        {% endif %}
+                                    </span>
                                     <img class="img-profile rounded-circle"
-                                        src="{% static 'core/img/undraw_profile.svg' %}">
+                                    src="
+                                        {% if admin %}
+                                            {% static 'core/img/undraw_profile.svg' %}
+                                        {% elif patient %}
+                                            {{ patient.avatar.url }}
+                                        {% elif nurse %}
+                                            {{ nurse.avatar.url }}
+                                        {% elif doctor %}
+                                            {{ doctor.avatar.url }}
+                                        {% elif caretaker %}
+                                            {{ caretaker.avatar.url }}
+                                        {% endif %}
+                                    ">
                                 </a>
                                 <!-- Dropdown - User Information -->
                                 <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
                                     aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="#">
+                                    <a class="dropdown-item"
+                                        {% if admin %}
+                                            href="{% url 'doctor_profile' admin.id %}"
+                                        {% elif patient %}
+                                            href="{% url 'patient_profile' patient.id %}"
+                                        {% elif nurse %}
+                                            href="{% url 'nurse_profile' nurse.id %}"
+                                        {% elif doctor %}
+                                            href="{% url 'doctor_profile' doctor.id %}"
+                                        {% elif caretaker %}
+                                            href="{% url 'caretaker_profile' caretaker.id %}"
+                                        {% endif %}
+                                    >
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                         Profile
                                     </a>
@@ -424,10 +468,17 @@
                                         Activity Log
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    {% if admin or patient or nurse or doctor or caretaker %}
+                                    <a class="dropdown-item" href="" data-toggle="modal" data-target="#logoutModal">
                                         <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
                                         Logout
                                     </a>
+                                    {% else %}
+                                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#loginModal">
+                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                        Login
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </li>
 
@@ -470,6 +521,27 @@
         </a>
         
         {% block modal %}
+        <!-- Login Modal-->
+        <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+        
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">You are about to Login...?</h5>
+                        <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">Select "Login" below to start a new session.</div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <a class="btn btn-primary" href="{% url 'login' %}">Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Logout Modal-->
         <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
             aria-hidden="true">
@@ -485,7 +557,7 @@
                     <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                        <a class="btn btn-primary" href="login.html">Logout</a>
+                        <a class="btn btn-primary" href="{% url 'logout' %}">Logout</a>
                     </div>
                 </div>
             </div>

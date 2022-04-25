@@ -1,6 +1,60 @@
 from django import forms
+from django.contrib.auth.models import User
 from core.models import Caretaker, Doctor, Nurse, Patient
 
+# Admin Login Form
+class Admin_Login(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [ 'username', 'password' ]
+
+# Login Forms Doctor
+class Doctor_Login(forms.ModelForm):
+    class Meta:
+        model = Doctor
+        fields = [ 'nin', 'password' ]
+        widgets = {
+            'nin': forms.TextInput(attrs={
+                'placeholder': 'National Identity Number',
+                'class': 'form-control form-control-user'
+            }),
+            'password': forms.PasswordInput(attrs={
+                'placeholder': 'Password',
+                'class': 'form-control form-control-user'
+            }),
+        }
+
+# Login Forms Nurse
+class Nurse_Login(forms.ModelForm):
+    class Meta:
+        model = Nurse
+        fields = [ 'nin', 'password' ]
+        widgets = {
+            'nin': forms.TextInput(attrs={
+                'placeholder': 'National Identity Number',
+                'class': 'form-control form-control-user'
+            }),
+            'password': forms.PasswordInput(attrs={
+                'placeholder': 'Password',
+                'class': 'form-control form-control-user'
+            }),
+        }
+
+# Login Forms Caretaker
+class Caretaker_Login(forms.ModelForm):
+    class Meta:
+        model = Caretaker
+        fields = [ 'nin', 'password' ]
+        widgets = {
+            'nin': forms.TextInput(attrs={
+                'placeholder': 'National Identity Number',
+                'class': 'form-control form-control-user'
+            }),
+            'password': forms.PasswordInput(attrs={
+                'placeholder': 'Password',
+                'class': 'form-control form-control-user'
+            }),
+        }
 
 # Doctor Form
 class Doctor_Form(forms.ModelForm):

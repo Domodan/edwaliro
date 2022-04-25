@@ -45,42 +45,113 @@
                                 <div class="col-lg-6">
                                     <div class="p-5">
                                         <div class="text-center">
-                                            <h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+                                            <h1 class="h3 text-gray-900 mb-4">Hello, Welcome!</h1>
+                                        </div>                       
+                                        <div>
+                                            {% if messages %}
+                                            {% for message in messages %}
+                                                {% if 'success' in message.tags %} 
+                                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                                    {{ message|safe }} 
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                {% elif 'error' in message.tags %} 
+                                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                    {{ message|safe }} 
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                {% elif 'info' in message.tags %} 
+                                                {% if message|safe != "NEP is still in <strong>BETA</strong><br/>Feedback is most appreciated!" %}
+                                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                                        {{ message|safe }} 
+                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                {% endif %}
+                                                {% elif 'warning' in message.tags %} 
+                                                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                                    {{ message|safe }}
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
                                         </div>
-                                        <form class="user" action="{% url 'login' %}" method="post">
+                                        <form class="user" action="{% url 'login' %}" method="POST">
                                             {% csrf_token %}
-                                            <div class="form-group">
-                                                <input type="email" class="form-control form-control-user"
-                                                    id="exampleInputEmail" aria-describedby="emailHelp"
-                                                    placeholder="Enter Email Address...">
-                                            </div>
-                                            <div class="form-group">
-                                                <input type="password" class="form-control form-control-user"
-                                                    id="exampleInputPassword" placeholder="Password">
-                                            </div>
-                                            <div class="form-group">
-                                                <div class="custom-control custom-checkbox small">
-                                                    <input type="checkbox" class="custom-control-input" id="customCheck">
-                                                    <label class="custom-control-label" for="customCheck">Remember
-                                                        Me</label>
+                                            <h1 class="h4 text-gray-800 mb-2">Login As</h1>
+                                            <p>
+                                                <a class="btn btn-outline-primary" id="admin" onclick="get_login_category(this.id)"
+                                                    data-toggle="collapse" href="#collapseExample"
+                                                    role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                    Admin
+                                                </a>
+                                                <a class="btn btn-outline-warning" id="doctor" onclick="get_login_category(this.id)"
+                                                    data-toggle="collapse" href="#collapseExample"
+                                                    role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                    Doctor
+                                                </a>
+                                                <a class="btn btn-outline-success" id="nurse" onclick="get_login_category(this.id)"
+                                                    data-toggle="collapse" href="#collapseExample"
+                                                    role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                    Nurse
+                                                </a>
+                                                <a class="btn btn-outline-info" id="caretaker" onclick="get_login_category(this.id)"
+                                                    data-toggle="collapse" href="#collapseExample"
+                                                    role="button" aria-expanded="false" aria-controls="collapseExample">
+                                                    Caretaker
+                                                </a>
+                                            </p>
+
+                                            <div class="collapse" id="collapseExample">
+                                                
+                                                <div class="form-group user_login">
+                                                    <input type="text" class="form-control form-control-user"
+                                                        id="nin" aria-describedby="ninHelp" name="nin"
+                                                        placeholder="National Identity Number (NIN)" required>
+                                                </div>
+                                                <div class="form-group admin_login" style="display: none;">
+                                                    <input type="username" class="form-control form-control-user"
+                                                        id="username" aria-describedby="usernameHelp" name="username"
+                                                        placeholder="Enter Username.....">
+                                                </div>
+                                                <div class="form-group">
+                                                    <input type="password" class="form-control form-control-user"
+                                                        id="password" placeholder="Password" name="password" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="custom-control custom-checkbox small">
+                                                        <input type="checkbox" class="custom-control-input" id="customCheck">
+                                                        <label class="custom-control-label" for="customCheck">Remember
+                                                            Me</label>
+                                                    </div>
+                                                </div>
+                                                <div id="sign_in_action"></div>
+                                                <input type="submit" value="Login" class="btn btn-primary btn-user btn-block">
+                                                <hr>
+                                                <a href="{% url 'index' %}" class="btn btn-google btn-user btn-block">
+                                                    <i class="fab fa-google fa-fw"></i> Login with Google
+                                                </a>
+                                                <a href="{% url 'index' %}" class="btn btn-facebook btn-user btn-block">
+                                                    <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook
+                                                </a>
+                                                
+                                                <hr>
+                                                <div class="text-center">
+                                                    <a class="small" href="{% url 'forgot_password' %}">Forgot Password?</a>
+                                                </div>
+                                                <div class="text-center">
+                                                    <a class="small" href="{% url 'doctor_add' %}">Create an Account!</a>
                                                 </div>
                                             </div>
-                                            <input type="submit" value="Login" class="btn btn-primary btn-user btn-block">
-                                            <hr>
-                                            <a href="{% url 'index' %}" class="btn btn-google btn-user btn-block">
-                                                <i class="fab fa-google fa-fw"></i> Register with Google
-                                            </a>
-                                            <a href="{% url 'index' %}" class="btn btn-facebook btn-user btn-block">
-                                                <i class="fab fa-facebook-f fa-fw"></i> Register with Facebook
-                                            </a>
                                         </form>
-                                        <hr>
-                                        <div class="text-center">
-                                            <a class="small" href="{% url 'forgot_password' %}">Forgot Password?</a>
-                                        </div>
-                                        <div class="text-center">
-                                            <a class="small" href="{% url 'doctor_add' %}">Create an Account!</a>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -102,6 +173,84 @@
 
         <!-- Custom scripts for all pages-->
         <script src="{% static 'core/js/sb-admin-2.min.js' %}"></script>
+
+        
+    <script>
+        let sign_in_action = document.getElementById('sign_in_action');
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'action';
+        input.value = 'admin';
+        sign_in_action.appendChild(input);
+
+        function get_login_category(category) {
+            console.log("Category:", category);
+
+            const admin_login = document.getElementsByClassName("admin_login");
+            const user_login = document.getElementsByClassName("user_login");
+
+            if (category === "admin") {
+                input.value = 'admin';
+                sign_in_action.appendChild(input);
+
+                for(i = 0; i < admin_login.length; i++) {
+                    if (admin_login[i].style.display === "none") {
+                        admin_login[i].style.display = "block";
+                        user_login[i].style.display = "none";
+                        document.getElementById('nin').required = false;
+                        document.getElementById('username').required = true;
+                    }
+                    // else {
+                    //     admin_login[i].style.display = "none";
+                    //     user_login[i].style.display = "block";
+                    //     document.getElementById('nin').required = false;
+                    //     document.getElementById('username').required = true;
+                    // }
+                }
+            }
+            else if (category === "doctor") {
+                input.value = 'doctor';
+                sign_in_action.appendChild(input);
+
+                for(i = 0; i < user_login.length; i++) {
+                    if (user_login[i].style.display === "none") {
+                        user_login[i].style.display = "block";
+                        admin_login[i].style.display = "none";
+                        document.getElementById('nin').required = true;
+                        document.getElementById('username').required = false;
+                    }
+                }
+            }
+            else if (category === "nurse") {
+                input.value = 'nurse';
+                sign_in_action.appendChild(input);
+
+                for(i = 0; i < user_login.length; i++) {
+                    if (user_login[i].style.display === "none") {
+                        user_login[i].style.display = "block";
+                        admin_login[i].style.display = "none";
+                        document.getElementById('nin').required = true;
+                        document.getElementById('username').required = false;
+                    }
+                }
+            }
+            else if (category === "caretaker") {
+                input.value = 'caretaker';
+                sign_in_action.appendChild(input);
+
+                for(i = 0; i < user_login.length; i++) {
+                    if (user_login[i].style.display === "none") {
+                        user_login[i].style.display = "block";
+                        admin_login[i].style.display = "none";
+                        document.getElementById('nin').required = true;
+                        document.getElementById('username').required = false;
+                    }
+                }
+            }
+        }
+        
+    </script>
+
 
     </body>
 

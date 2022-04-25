@@ -3,30 +3,146 @@ import requests
 from django.urls import reverse
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
+import urllib
 
 from core.forms import *
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 
 # Index views.
 def index(request):
+    
+    instance_id = request.session.get('user_id', None)
 
-    '''
-    {'id': 1596329, 'name': 'iDwaliro', 'description': 'A Telehealth channel',
-    'latitude': '0.0', 'longitude': '0.0', 'field1': 'Temperature', 'field2': 'Humidity',
-    'field3': 'HIC (Heat Index)', 'field4': 'Heart Rate', 'field5': 'Oxygen Level',
-    'field6': 'Body Temperature', 'field7': 'Test Field', 'created_at': '2021-12-04T09:33:45Z',
-    'updated_at': '2022-02-14T05:55:17Z', 'last_entry_id': 299}
-    '''
+    patient_id = request.session.get('patient_id', None)
+    nurse_id = request.session.get('nurse_id', None)
+    doctor_id = request.session.get('doctor_id', None)
+    caretaker_id = request.session.get('caretaker_id', None)
 
-    url = 'https://api.thingspeak.com/channels/1596329/feeds.json?api_key=PY5EDT094TON962X&results=5'
-    response = requests.get(url).json()
-    data = response['feeds'][3]
+    if instance_id or patient_id or nurse_id or doctor_id or caretaker_id:
+        print("Authenticated User:")
 
-    return render(request, 'core/index.html',
+        '''
+        {'id': 1596329, 'name': 'iDwaliro', 'description': 'A Telehealth channel',
+        'latitude': '0.0', 'longitude': '0.0', 'field1': 'Temperature', 'field2': 'Humidity',
+        'field3': 'HIC (Heat Index)', 'field4': 'Heart Rate', 'field5': 'Oxygen Level',
+        'field6': 'Body Temperature', 'field7': 'Test Field', 'created_at': '2021-12-04T09:33:45Z',
+        'updated_at': '2022-02-14T05:55:17Z', 'last_entry_id': 299}
+        '''
+
+        url = 'https://api.thingspeak.com/channels/1596329/feeds.json?api_key=PY5EDT094TON962X&results=5'
+        response = requests.get(url).json()
+        data = response['feeds'][3]
+
+        return render(request, 'core/index.html',
+            {
+                'data': data,
+                'page': 'home',
+            }
+        )
+    else:
+        print("None Authenticated User:")
+
+        return render(request, 'core/login.html',
+            {
+                'login': 'home',
+            }
+        )
+
+
+# General Login Views
+def user_login(request):
+    if request.method == 'GET':
+        print("It's a get method")
+    
+    if request.method == 'POST':
+        print("Request Method:", request.POST)
+        action = request.POST.get('action', None)
+        print("Action:", action)
+        if action in ['doctor', 'nurse', 'caretaker']:
+            print("Action in Doctor, Nurse, Caretaker:", action)
+            if action == 'doctor':
+                print("Post Doctor:", request.POST)
+                doctor_form = Doctor_Login(request.POST)
+                if doctor_form.is_valid():
+                    nin = doctor_form.cleaned_data.get('nin')
+                    password = doctor_form.cleaned_data.get('password')
+                    try:
+                        instance = Doctor.objects.get(nin=nin, password=password)
+                        request.session['doctor_id'] = instance.id
+                        return HttpResponseRedirect(reverse('index'))
+                    except Doctor.DoesNotExist:
+                        messages.error( request, "Error, User does not exist, please check and try again" )
+                else:
+                    messages.error( request, "Error, invalid data, please try again" )
+            elif action == 'nurse':
+                print("Post Nurse:", request.POST)
+                nurse_form = Nurse_Login(request.POST)
+                if nurse_form.is_valid():
+                    nin = nurse_form.cleaned_data.get('nin')
+                    password = nurse_form.cleaned_data.get('password')
+                    try:
+                        instance = Nurse.objects.get(nin=nin, password=password)
+                        request.session['nurse_id'] = instance.id
+                        return HttpResponseRedirect(reverse('index'))
+                    except Nurse.DoesNotExist:
+                        messages.error( request, "Error, User does not exist, please check and try again" )
+                else:
+                    messages.error( request, "Error, invalid data, please try again" )
+            elif action == 'caretaker':
+                print("Post Caretaker:", request.POST)
+                caretaker_form = Caretaker_Login(request.POST)
+                if caretaker_form.is_valid():
+                    nin = caretaker_form.cleaned_data.get('nin')
+                    password = caretaker_form.cleaned_data.get('password')
+                    try:
+                        instance = Caretaker.objects.get(nin=nin, password=password)
+                        request.session['caretaker_id'] = instance.id
+                        return HttpResponseRedirect(reverse('index'))
+                    except Caretaker.DoesNotExist:
+                        messages.error( request, "Error, User does not exist, please check and try again" )
+                else:
+                    messages.error( request, "Error, invalid data, please try again" )
+        elif action in ['admin']:
+            username = request.POST.get('username', None)
+            password = request.POST.get('password', None)
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    request.session['user_id'] = user.id
+                    return HttpResponseRedirect(reverse('index'))
+            else:
+                messages.error( request, "Error, User does not exist, please check and try again" )
+        else:
+            messages.error( request, "Invalid Action: Please Choose a correct Login Action" )
+    
+    return render(request, 'core/login.html',
         {
-            'data': data,
-            'page': 'home',
+            'login': 'login',
         }
     )
+
+
+# General Logout Views
+def user_logout(request):
+    
+    instance_id = request.session.get('user_id', None)
+
+    patient_id = request.session.get('patient_id', None)
+    nurse_id = request.session.get('nurse_id', None)
+    doctor_id = request.session.get('doctor_id', None)
+    caretaker_id = request.session.get('caretaker_id', None)
+
+    print("Loging Out Admin:", instance_id)
+
+    print("Loging Out Patient:", patient_id)
+
+    print("Loging Out Nurse:", nurse_id)
+
+    print("Loging Out Doctor:", doctor_id)
+
+    print("Loging Out Caretaker:", caretaker_id)
 
 
 # Doctor views.
@@ -104,7 +220,20 @@ def doctor_delete(request, doctor_id):
     return HttpResponseRedirect(reverse('doctor'))
 
 def doctor_profile(request, doctor_id):
-    print("Enter Profiles")
+    is_doctor = False
+    is_admin = False
+
+    instance_id = request.session.get('user_id', None)
+    instance_doctor = request.session.get('doctor_id', None)
+    
+    if instance_id:
+        doctor = User.objects.get( id = instance_id, is_active = True )
+        is_admin = True
+    elif instance_doctor:
+        doctor = Doctor.objects.get( id = instance_doctor )
+        is_doctor = True
+    else:
+        messages.error( request, "Error, User does not exist, please check and try again" )
 
     url = 'https://api.thingspeak.com/channels/1596329/feeds.json?api_key=PY5EDT094TON962X&results=5'
     data = requests.get(url).json()
@@ -112,8 +241,10 @@ def doctor_profile(request, doctor_id):
 
     return render(request, "core/doctor_profile.html",
         {
-            "page": "profile",
-            "profile": "profile",
+            "page": "doctor_profile",
+            "profile": doctor,
+            "is_doctor": is_doctor,
+            "is_admin": is_admin
         }
     )
 
@@ -192,11 +323,14 @@ def nurse_delete(request, nurse_id):
     return HttpResponseRedirect(reverse('nurse'))
 
 def nurse_profile(request, nurse_id):
-    print("Enter Profiles")
+    try:
+        nurse = Nurse.objects.get(pk=nurse_id)
+    except Nurse.DoesNotExist:
+        messages.error( request, "Error, User does not exist, please check and try again" )
     return render(request, "core/nurse_profile.html",
         {
-            "page": "profile",
-            "profile": "profile",
+            "page": "nurse_profile",
+            "profile": nurse,
         }
     )
 
@@ -275,11 +409,14 @@ def caretaker_delete(request, caretaker_id):
     return HttpResponseRedirect(reverse('caretaker'))
 
 def caretaker_profile(request, caretaker_id):
-    print("Enter Profiles")
+    try:
+        caretaker = Caretaker.objects.get(pk=caretaker_id)
+    except Caretaker.DoesNotExist:
+        messages.error( request, "Error, User does not exist, please check and try again" )
     return render(request, "core/caretaker_profile.html",
         {
-            "page": "profile",
-            "profile": "profile",
+            "page": "caretaker_profile",
+            "profile": caretaker,
         }
     )
 
@@ -357,27 +494,14 @@ def patient_delete(request, patient_id):
     return HttpResponseRedirect(reverse('patient'))
 
 def patient_profile(request, patient_id):
-    print("Enter Profiles")
+    try:
+        patient = Patient.objects.get(pk=patient_id)
+    except Patient.DoesNotExist:
+        messages.error( request, "Error, User does not exist, please check and try again" )
     return render(request, "core/patient_profile.html",
         {
-            "page": "profile",
-            "profile": "profile",
-        }
-    )
-
-
-# Login views.
-def user_login(request):
-    if request.method == 'GET':
-        print("It's a get method")
-    
-    if request.method == 'POST':
-        print("It's a post method")
-        return HttpResponseRedirect(reverse('index'))
-    
-    return render(request, 'core/login.html',
-        {
-            'patient': 'patient',
+            "page": "patient_profile",
+            "profile": patient,
         }
     )
 
@@ -423,55 +547,75 @@ def fetch_data(request):
 
 # Send SMS
 def send_sms(request):
+
+    '''
+    MAKERERE UNI DICTS LOGINS
+
+    Account Login
+    URL: https://sms.dmarkmobile.com/v2/
+    Username: makuni
+    Pass: dicts
+
+    API END-POINT
+    https://sms.dmarkmobile.com/v2/api/send_sms/?
+    spname=makuni&sppass=dicts&sender=8008&numbers=256xxxxxxxxx&msg=testing&type=json
+
+    https://sms.dmarkmobile.com/v2/api/send_sms/?
+    spname=makuni&sppass=dicts&numbers=0789157162
+    &msg="Abnormal Body Temperature of 29.19 detected"&type=json
+
+    https://sms.dmarkmobile.com/v2/api/send_sms/?
+    spname=username***&sppass=password***&numbers=256787550983,256754033432
+    &msg=testing%20API%20SMS%20delivery&type=json
+
+
+    https://sms.dmarkmobile.com/v2/api/acc_bal/?spname=username***&sppass=password***
+
+    https://sms.dmarkmobile.com/v2/api/acc_bal/?spname=makuni&sppass=dicts
+    
+    '''
     
     data = json.loads(request.body)
 
-    base_url = 'https://sms.dmarkmobile.com/v2/'
-    api_endpoint = 'api/send_sms/'
-    url = base_url + api_endpoint
-
-    spname_username = 'makuni'
-    sppass_password = 'dicts'
-
-    sender = 8008
     number = data['numbers']
     message = data['messages']
-    type = 'json'
 
-    params = {
-        'spname': spname_username,
-        'sppass': sppass_password
-    }
-    params = json.dumps(params)
+    print("Request Message:", message)
 
-    data = {
-        'sender': sender,
-        'numbers': number,
-        'msg': message,
-        'type': type,
-    }
-    data = json.dumps(data)
-
-    header = {
-        'Content-Type': 'application/json'
-    }
+    patient = Patient.objects.get()
+    message += " " + patient.nin
     
-    sample_call = 'https://sms.dmarkmobile.com/v2/api/send_sms/?spname=makuni&sppass=dicts&sender=8008&numbers=' + number + '&msg=' + message + '&type=json'
+    message = urllib.parse.quote(message)
 
-    response = requests.post(url=sample_call)
+    print("Message:", message)
+    
+    username = 'makuni'
+    password = 'dicts'
+    types = 'json'
 
-    if response.status_code == 200:
-        json_data = response.json()
-        print("Returned JSON Data:", json_data)
-        status = json_data['Error']
-        print("Status: %s", status)
-        if(status):
-            return JsonResponse({"error": status})
-        return JsonResponse({"success":"SMS sent successfully"})
-    else:
-        print("Couldn't send SMS")
-        print("Response:", response)
-        return JsonResponse({"error": response})
+    base_url = 'https://sms.dmarkmobile.com/v2/api/'
+    api_endpoint_send_sms = 'send_sms/?'
+
+    spname = 'spname=' + username
+    sppass = '&sppass=' + password
+    numbers = '&numbers=' + number
+    msg = '&msg=' + message
+    type = '&type=' + types
+
+    url_send_sms = base_url + api_endpoint_send_sms + spname + sppass
+    url_send_sms += numbers + msg + type
+
+    print("API URL:", url_send_sms)
+    
+    # response = requests.get(url=url_send_sms)
+
+    # if response.status_code == 200:
+    #     json_data = response.json()
+    #     print("JSON Response:", json_data)
+    #     return JsonResponse(json_data)
+    # else:
+    #     print("Couldn't send SMS")
+    #     return JsonResponse({"Error": "Could Not Send SMS", "Response": response})
 
 
 # Testing
