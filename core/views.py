@@ -607,15 +607,15 @@ def send_sms(request):
 
     print("API URL:", url_send_sms)
     
-    # response = requests.get(url=url_send_sms)
+    response = requests.get(url=url_send_sms)
 
-    # if response.status_code == 200:
-    #     json_data = response.json()
-    #     print("JSON Response:", json_data)
-    #     return JsonResponse(json_data)
-    # else:
-    #     print("Couldn't send SMS")
-    #     return JsonResponse({"Error": "Could Not Send SMS", "Response": response})
+    if response.status_code == 200:
+        json_data = response.json()
+        print("JSON Response:", json_data)
+        return JsonResponse(json_data)
+    else:
+        print("Couldn't send SMS")
+        return JsonResponse({"Error": "Could Not Send SMS", "Response": response})
 
 
 # Testing

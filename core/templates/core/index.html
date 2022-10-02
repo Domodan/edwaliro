@@ -234,7 +234,8 @@
 
     async function send_sms(message, number) {
         
-        const url = 'http://127.0.0.1:8000/core/send_sms/';
+        // const url = 'http://127.0.0.1:8000/core/send_sms/';
+        const url = 'http://gnome.mak.ac.ug/send_sms/';
         const method = "POST";
         const contentType = "application/json";
         const accept = "application/json";
@@ -314,7 +315,7 @@
 
             if ((datum2 !== 0) && (datum2 < 30 || datum2 > 37)) {
                 const message = "iDwaliro ALERTS!!!! \nAbnormal Condition Detected: \nBody Temperature: " + datum2 + " \nPatient ID:";
-                const number = "256776499859,256789157162";
+                const number = "256776499859,256771813487";
 
                 console.log("SMS Message:", message, " Phone:", number);
                 const response = send_sms(message, number)
